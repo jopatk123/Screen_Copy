@@ -10,6 +10,9 @@ from config.settings import Settings
 
 class ScreenOCR:
     def __init__(self):
+        # 验证环境变量
+        self._verify_api_keys()
+        
         self.settings = Settings()
         self.screenshot_manager = ScreenshotManager()
         self.ocr_manager = OCRManager()
@@ -25,6 +28,76 @@ class ScreenOCR:
         self.running = True
         self.keyboard_listener = None
         
+    def _verify_api_keys(self):
+        """验证百度 API 密钥是否正确设置"""
+        # 首先尝试直接获取环境变量
+        api_key = os.getenv('BAIDU_API_KEY')
+        secret_key = os.getenv('BAIDU_SECRET_KEY')
+        
+        if not api_key or not secret_key:
+            # 尝试通过不同方式获取环境变量
+            try:
+                # 方法1：使用 winreg 读取注册表（仅 Windows）
+                import winreg
+                def get_env_from_registry(name):
+                    try:
+                        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
+                                           r'Environment', 
+                                           0, 
+                                           winreg.KEY_READ)
+                        value, _ = winreg.QueryValueEx(key, name)
+                        winreg.CloseKey(key)
+                        return value
+                    except:
+                        return None
+
+                api_key = get_env_from_registry('BAIDU_API_KEY')
+                secret_key = get_env_from_registry('BAIDU_SECRET_KEY')
+                
+                # 如果注册表中没有，尝试系统环境变量
+                if not api_key or not secret_key:
+                    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 
+                                       r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 
+                                       0, 
+                                       winreg.KEY_READ)
+                    if not api_key:
+                        api_key, _ = winreg.QueryValueEx(key, 'BAIDU_API_KEY')
+                    if not secret_key:
+                        secret_key, _ = winreg.QueryValueEx(key, 'BAIDU_SECRET_KEY')
+                    winreg.CloseKey(key)
+
+                # 如果还是没有找到，抛出异常
+                if not api_key or not secret_key:
+                    raise ValueError("未在注册表中找到环境变量")
+
+            except Exception as e:
+                print(f"从注册表读取失败: {str(e)}")
+                try:
+                    # 方法2：通过 subprocess 从 CMD 获取
+                    import subprocess
+                    api_key = subprocess.check_output('echo %BAIDU_API_KEY%', 
+                                                   shell=True).decode('utf-8').strip()
+                    secret_key = subprocess.check_output('echo %BAIDU_SECRET_KEY%', 
+                                                      shell=True).decode('utf-8').strip()
+                    
+                    # 检查是否获取到了实际的值而不是环境变量名称
+                    if api_key == '%BAIDU_API_KEY%' or secret_key == '%BAIDU_SECRET_KEY%':
+                        raise ValueError("环境变量未设置")
+                        
+                except Exception as sub_e:
+                    raise ValueError(
+                        f"无法获取环境变量。请确保已正确设置 BAIDU_API_KEY 和 BAIDU_SECRET_KEY。\n"
+                        f"错误详情：{str(sub_e)}"
+                    )
+        
+        # 确保值有效并设置到当前进程的环境变量中
+        if api_key and secret_key:
+            os.environ['BAIDU_API_KEY'] = api_key.strip()
+            os.environ['BAIDU_SECRET_KEY'] = secret_key.strip()
+            print(f"API 密钥验证成功：\nAPI_KEY: {api_key[:8]}...\nSECRET_KEY: {secret_key[:8]}...")
+        else:
+            raise ValueError("环境变量验证失败")
+
     def show_window(self):
         """显示主窗口"""
         self.main_window.show()

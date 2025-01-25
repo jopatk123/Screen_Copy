@@ -9,9 +9,8 @@ def load_config():
     load_dotenv()
     
     config = {
-        # 优先从系统环境变量读取，如果没有则从.env文件读取
-        'BAIDU_API_KEY': os.environ.get('BAIDU_API_KEY') or os.getenv('BAIDU_API_KEY'),
-        'BAIDU_SECRET_KEY': os.environ.get('BAIDU_SECRET_KEY') or os.getenv('BAIDU_SECRET_KEY'),
+        'BAIDU_API_KEY': os.getenv('BAIDU_API_KEY'),
+        'BAIDU_SECRET_KEY': os.getenv('BAIDU_SECRET_KEY'),
         'SCREENSHOT_HOTKEY': os.getenv('SCREENSHOT_HOTKEY', 'alt+d'),
         'WINDOW_WIDTH': int(os.getenv('WINDOW_WIDTH', 800)),
         'WINDOW_HEIGHT': int(os.getenv('WINDOW_HEIGHT', 600)),
@@ -23,8 +22,20 @@ def load_config():
 class Settings:
     def __init__(self):
         # OCR API配置
-        self.API_KEY = os.getenv("BAIDU_API_KEY", "")
-        self.SECRET_KEY = os.getenv("BAIDU_SECRET_KEY", "")
+        self.API_KEY = os.getenv("BAIDU_API_KEY")
+        self.SECRET_KEY = os.getenv("BAIDU_SECRET_KEY")
+        
+        # 检查必要的环境变量
+        if not self.API_KEY or not self.SECRET_KEY:
+            print("错误: 请确保已设置BAIDU_API_KEY和BAIDU_SECRET_KEY环境变量")
+            print("可以通过以下方式设置：")
+            print("1. 在系统环境变量中设置")
+            print("2. 在.env文件中设置")
+            print("3. 在运行程序前临时设置：")
+            print("   Windows PowerShell:")
+            print("   $env:BAIDU_API_KEY='你的API_KEY'")
+            print("   $env:BAIDU_SECRET_KEY='你的SECRET_KEY'")
+        
         self.OCR_API_URL = "https://aip.baidubce.com/oauth/2.0/token"
         self.OCR_REQUEST_URL = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
         
