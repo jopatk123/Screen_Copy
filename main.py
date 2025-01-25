@@ -7,9 +7,12 @@ from core.ocr import OCRManager
 from ui.tray import SystemTray
 from ui.main_window import MainWindow
 from config.settings import Settings
+import sys
 
 class ScreenOCR:
     def __init__(self):
+        # 添加资源路径处理
+        self.base_path = self._get_base_path()
         # 验证环境变量
         self._verify_api_keys()
         
@@ -97,6 +100,15 @@ class ScreenOCR:
             print(f"API 密钥验证成功：\nAPI_KEY: {api_key[:8]}...\nSECRET_KEY: {secret_key[:8]}...")
         else:
             raise ValueError("环境变量验证失败")
+
+    def _get_base_path(self):
+        """获取程序运行时的基础路径"""
+        if getattr(sys, 'frozen', False):
+            # 如果是打包后的exe
+            return os.path.dirname(sys.executable)
+        else:
+            # 如果是开发环境
+            return os.path.dirname(os.path.abspath(__file__))
 
     def show_window(self):
         """显示主窗口"""

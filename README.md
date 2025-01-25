@@ -1,4 +1,3 @@
-
 学习 git 用的
 
 一个基于Python的截图识别工具，能够对屏幕截图进行OCR文字识别。
@@ -54,4 +53,15 @@ python test_ocr.py
 
 - Python 3.x
 - 查看 `requirements.txt` 获取完整依赖列表
+
+project/
+├── main.py
+├── build.py
+├── requirements.txt
+├── resources/
+│   ├── icon.ico
+│   └── other_resources/
+├── dist/
+│   └── ScreenOCR.exe  # 打包后的文件
+└── build/  # 打包过程的临时文件
 
