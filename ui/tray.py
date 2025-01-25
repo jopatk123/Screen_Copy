@@ -71,13 +71,22 @@ class SystemTray:
 
     def on_exit(self):
         """退出程序回调"""
-        # 先停止托盘图标
-        self.tray.stop()
+        self.cleanup()
         # 调用退出回调
         if self.exit_callback:
             self.exit_callback()
         # 退出程序
         sys.exit(0)
+
+    def cleanup(self):
+        """清理系统托盘资源"""
+        try:
+            # 确保托盘图标被移除
+            if hasattr(self, 'tray'):
+                self.tray.stop()
+                self.tray = None
+        except Exception as e:
+            print(f"清理系统托盘时出错: {e}")
 
     def run(self):
         """运行系统托盘"""

@@ -114,15 +114,26 @@ class ScreenOCR:
             if self.keyboard_listener:
                 self.keyboard_listener.stop()
             
+            # 关闭系统托盘
+            if self.system_tray:
+                self.system_tray.cleanup()  # 确保SystemTray类中实现了cleanup方法
+            
             # 关闭主窗口
             if self.main_window:
                 self.main_window.close()
-                
+            
             # 标记程序结束
             self.running = False
             
+            # 确保所有资源都被释放
+            import gc
+            gc.collect()
+            
         except Exception as e:
             print(f"清理资源时出错: {e}")
+        finally:
+            # 确保程序状态被正确设置为结束
+            self.running = False
 
 if __name__ == "__main__":
     app = ScreenOCR()
